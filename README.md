@@ -1,6 +1,6 @@
 # Kubernetes Operator for a 2 tier app
 
-The premise of this project is to show some conceptual example of how you may build an operator for your application python Flask application.  
+This sample project is to show some conceptual example of how you may build an operator for your application - in this case a python Flask application.  
 
 ## Dependencies 
 
@@ -45,6 +45,11 @@ All relevant code is in [flask-postgres-operator.py](./flask-postgres-operator.p
 This is a realitively naive demonstration, for the most part just demonstrating the mechanics of the operator.
 
 Run the operator using kopf command line.  There is some great documentation on 
+
+The code requires a namespace to be present
+```
+kubectl create namespace kopf-helm-2-tier
+```
 ```
 kopf run flask-postgres-operator.py [--verbose]
 ```
