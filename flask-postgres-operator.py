@@ -11,11 +11,11 @@ NAMESPACE = "kopf-helm-2-tier"
 
 # We first install postgres on start of the operator
 # Helm will upgrade if its already installed
-@kopf.on.startup()
+#@kopf.on.startup()
+@kopf.on.create('flaskpostgresapps')
 async def startup_fn(logger, **kwargs):
-    logger.info("Starting operator")
-    global LOCK
-    LOCK = asyncio.Lock()  # uses the running asyncio loop by default
+    logger.info("On flaskpostgresapp creation")
+    
     helm = Helm()
     helm.upgrade(
         name = "postgresdb",
@@ -24,14 +24,16 @@ async def startup_fn(logger, **kwargs):
         sets= [
             {'name': "auth.username", 'value': 'postgres'},
             {'name': "auth.password", 'value': "postgres"},
-        ]
+        ],
+        wait=True
     )
-    logger.info("Complete Start")
+    logger.info("Complete postgres installation")
 
     
 # This is triggered from the "Postgres" installation 
-# But there are better ways to do this but shows
-# that conceptually you can listen to events of the Helm deployment
+# We are waiting for a Pod ready condition, not just creation
+# Need to explore kopf more deeply to understand if we can handle
+# Pod ready events
 @kopf.on.create('Pod')
 async def create_fn(spec, name, namespace, logger, **kwargs):
     

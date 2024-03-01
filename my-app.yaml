@@ -1,0 +1,13 @@
+apiVersion: msimonsen.dev/v1
+kind: FlaskPostgresApp
+metadata:
+  name: my-2-tier-app
+  labels: {}
+
+#The spec has no impact, it's just for show, but can be feed into 
+#Helm for postgres and customized template for the application deployment
+spec:
+  flask:
+    replicas: 1
+  postgres:
+    disk-size: 8G

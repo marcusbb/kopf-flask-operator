@@ -34,9 +34,30 @@ Install Dependencies
 pip install -r requirements.txt
 ```
 
+[Optional]
 Install Minikube - this is optional but for testing is quick and painless.  https://minikube.sigs.k8s.io/docs/start/
 
 I tested everything locally using minikube on Docker.  Feel free to try this out on a full k8s setup!  Helm and the kubernetes client will automatically pick up your KUBE_CONFIG. 
+
+### Install CRD
+
+This is the bit that describes the customized app that you are creating.
+
+```
+kubectl apply -f crd.yaml
+```
+
+### Install your application
+The code requires a namespace to be present
+```
+kubectl create namespace kopf-helm-2-tier
+# And use it by default
+kubectl config set-context --current --namespace kopf-helm-2-tier
+```
+
+```
+kubectl apply -f my-app.yaml
+```
 
 
 ## Operating
@@ -46,10 +67,10 @@ This is a realitively naive demonstration, for the most part just demonstrating 
 
 Run the operator using kopf command line.  There is some great documentation on 
 
-The code requires a namespace to be present
-```
-kubectl create namespace kopf-helm-2-tier
-```
+
 ```
 kopf run flask-postgres-operator.py [--verbose]
 ```
+
+This should install postgres and the flask deployment on the namespace kopf-helm-2-tier.
+
