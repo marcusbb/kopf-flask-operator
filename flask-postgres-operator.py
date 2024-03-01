@@ -29,27 +29,44 @@ async def startup_fn(logger, **kwargs):
     )
     logger.info("Complete postgres installation")
 
-    
+
+@kopf.on.event('Pod')
+def my_handler(event, name, namespace, logger, **_):
+    if name == POSTGRES_POD and namespace == "kopf-helm-2-tier":
+        logger.info(f"Got event {event}")
+        try:
+            if event['object']['status']['phase'] == "Running":
+
+                deploy_flask(namespace)
+                logger.info("Deployed Flask app")
+        except Exception as e:
+            logger.warn(e)
 # This is triggered from the "Postgres" installation 
 # We are waiting for a Pod ready condition, not just creation
 # Need to explore kopf more deeply to understand if we can handle
 # Pod ready events
-@kopf.on.create('Pod')
-async def create_fn(spec, name, namespace, logger, **kwargs):
+#@kopf.on.event('Pod')
+async def create_fn(event, name, namespace, logger, **kwargs):
     
     # When we're done 
     # We could probably also check the health of the pod
     if name == POSTGRES_POD and namespace == "kopf-helm-2-tier":
+        for event in kwargs['watcher']:
+            if event['type'] == 'MODIFIED':
+                pod = event['object']
+                if pod.status.phase == 'Running' and all(c.ready for c in pod.status.conditions if c.type == 'Ready'):
+                    # Pod is in a ready state, you can react here
+                    logger.info(f"Pod {name} in namespace {namespace} is now ready.")
+                  
 
-        logger.info(f"###### Pod creation event from {namespace}/{name} ")
-        path = os.path.join(os.path.dirname(__file__), 'flask/deployment.yaml')
-        tmpl = open(path, 'rt').read()
-        data = yaml.safe_load(tmpl)
+def deploy_flask(namespace):
+    path = os.path.join(os.path.dirname(__file__), 'flask/deployment.yaml')
+    tmpl = open(path, 'rt').read()
+    data = yaml.safe_load(tmpl)
 
-        api = client.AppsV1Api()
-        
-        obj = api.create_namespaced_deployment(
-            namespace=namespace,
-            body=data,
-        )
-
+    api = client.AppsV1Api()
+    
+    obj = api.create_namespaced_deployment(
+        namespace=namespace,
+        body=data,
+    )
