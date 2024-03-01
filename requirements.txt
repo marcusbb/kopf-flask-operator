@@ -1,0 +1,4 @@
+kopf
+kubernetes
+pyhelm
+helm_python/

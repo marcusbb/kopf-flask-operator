@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flask-app
+  template:
+    metadata:
+      labels:
+        app: flask-app
+    spec:
+      containers:
+        - name: kopf-flask
+          # This was uploaded my hub, but feel free to build this yourself
+          image: msimonsen/kopf-flask:v1.0.1
+          env:
+            - name: DBHOST
+              value: postgresdb-postgresql.kopf-helm-2-tier.svc.cluster.local
+          ports:
+            - containerPort: 5000
